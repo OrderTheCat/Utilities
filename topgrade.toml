@@ -1,7 +1,0 @@
-[misc]
-# Skip firmware updates entirely
-disable = ["firmware"]
-
-[firmware]
-# If firmware step does run, only show available updates — do not install
-upgrade = false
