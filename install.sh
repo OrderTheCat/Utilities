@@ -42,25 +42,50 @@ case $browser_choice in
         ;;
 esac
 
+echo "Select your Discord client:"
+echo "1) Discord"
+echo "2) Vesktop"
+
+read -p "Enter choice [1-2]: " discord_choice
+
+case $discord_choice in
+    1)
+        DISCORD_FLATPAK="com.discordapp.Discord"
+        ;;
+    2)
+        DISCORD_FLATPAK="com.vesktop.Vesktop"
+        ;;
+    *)
+        echo "Invalid Discord choice."
+        exit 1
+        ;;
+esac
+
 PACKAGES="fastfetch kitty topgrade $BROWSER"
 
 case $choice in
     1)
         echo "Detected Fedora"
         sudo dnf update -y
-        sudo dnf install -y $PACKAGES
+        sudo dnf install -y flatpak $PACKAGES
+        sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+        sudo flatpak install flathub $DISCORD_FLATPAK -y
         ;;
     
     2)
         echo "Detected Debian/Ubuntu"
         sudo apt update
-        sudo apt install -y $PACKAGES
+        sudo apt install -y flatpak $PACKAGES
+        sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+        sudo flatpak install flathub $DISCORD_FLATPAK -y
         ;;
     
     3)
         echo "Detected Arch Linux"
         sudo pacman -Syu --noconfirm
-        sudo pacman -S --noconfirm $PACKAGES
+        sudo pacman -S --noconfirm flatpak $PACKAGES
+        sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+        sudo flatpak install flathub $DISCORD_FLATPAK -y
         ;;
     
     *)
