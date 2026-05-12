@@ -37,7 +37,7 @@ case $browser_choice in
         BROWSER="brave-browser"
         ;;
     *)
-        echo "Invalid browser choice."
+        echo "Wrong choice. Please run the script again and select a valid option."
         exit 1
         ;;
 esac
@@ -56,7 +56,7 @@ case $discord_choice in
         DISCORD_FLATPAK="com.vesktop.Vesktop"
         ;;
     *)
-        echo "Invalid Discord choice."
+        echo "Wrong choice. Please run the script again and select a valid option."
         exit 1
         ;;
 esac
@@ -89,9 +89,9 @@ case $choice in
         ;;
     
     *)
-        echo "Invalid choice."
+        echo "Wrong choice. Please run the script again and select a valid option."
         exit 1
         ;;
 esac
 
-echo "Installation complete!"
+echo "Setup is done!"
