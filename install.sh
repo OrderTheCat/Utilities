@@ -42,7 +42,7 @@ case $browser_choice in
         ;;
 esac
 
-PACKAGES="fastfetch kitty $BROWSER"
+PACKAGES="fastfetch kitty topgrade $BROWSER"
 
 case $choice in
     1)
