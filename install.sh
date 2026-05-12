@@ -23,7 +23,26 @@ echo "3) Arch Linux"
 
 read -p "Enter choice [1-3]: " choice
 
-PACKAGES="fastfetch kitty firefox"
+echo "Select your browser:"
+echo "1) Firefox"
+echo "2) Brave"
+
+read -p "Enter choice [1-2]: " browser_choice
+
+case $browser_choice in
+    1)
+        BROWSER="firefox"
+        ;;
+    2)
+        BROWSER="brave-browser"
+        ;;
+    *)
+        echo "Invalid browser choice."
+        exit 1
+        ;;
+esac
+
+PACKAGES="fastfetch kitty $BROWSER"
 
 case $choice in
     1)
