@@ -23,25 +23,6 @@ echo "3) Arch Linux"
 
 read -p "Enter choice [1-3]: " choice
 
-echo "Select your browser:"
-echo "1) Firefox"
-echo "2) Brave"
-
-read -p "Enter choice [1-2]: " browser_choice
-
-case $browser_choice in
-    1)
-        BROWSER="firefox"
-        ;;
-    2)
-        BROWSER="brave-browser"
-        ;;
-    *)
-        echo "Wrong choice. Please run the script again and select a valid option."
-        exit 1
-        ;;
-esac
-
 echo "Select your Discord client:"
 echo "1) Discord"
 echo "2) Vesktop"
