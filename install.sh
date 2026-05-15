@@ -42,7 +42,7 @@ case $discord_choice in
         ;;
 esac
 
-PACKAGES="fastfetch kitty topgrade"
+PACKAGES="fastfetch topgrade"
 
 case $choice in
     1)
