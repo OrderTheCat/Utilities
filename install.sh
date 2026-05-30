@@ -1,78 +1,107 @@
-# Source
+#!/usr/bin/env bash
+set -euo pipefail
 
-DIR1=~/Utilities/topgrade.toml
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$SCRIPT_DIR"
 
-# Destination
+DNF_SRC="$REPO_ROOT/dnf/dnf.conf"
+DNF_DEST="/etc/dnf/dnf.conf"
+TOPGRADE_SRC="$REPO_ROOT/topgrade.toml"
+TOPGRADE_DEST="$HOME/.config/topgrade.toml"
 
-DEST1=~/.config
+usage() {
+  cat <<USAGE
+Usage: $0 [--help] [--dry-run]
 
-# Move
+Install repository configuration files:
+  - $DNF_SRC -> $DNF_DEST
+  - $TOPGRADE_SRC -> $TOPGRADE_DEST
 
-mv "$DIR1" "$DEST1"
+Options:
+  --dry-run  Show what would be installed without writing files.
+  --help     Show this help message.
+USAGE
+}
 
-echo "Setup of system utilities done!"
+log() {
+  printf '%s\n' "$*"
+}
 
-#!/bin/bash
+die() {
+  printf 'ERROR: %s\n' "$*" >&2
+  exit 1
+}
 
-# Figure out which distribution the user is on.
+run() {
+  if [ "$DRY_RUN" = true ]; then
+    log "DRY RUN: $*"
+  else
+    eval "$*"
+  fi
+}
 
-echo "Select your Linux distribution:"
-echo "1) Fedora"
-echo "2) Debian/Ubuntu"
-echo "3) Arch Linux"
+check_source() {
+  [ -f "$1" ] || die "Missing source file: $1"
+}
 
-read -p "Enter choice [1-3]: " choice
+install_file() {
+  local src="$1"
+  local dest="$2"
+  local dest_dir
+  dest_dir="$(dirname "$dest")"
 
-echo "Select your Discord client:"
-echo "1) Discord"
-echo "2) Vesktop"
+  log "Installing $src -> $dest"
+  if [ "$DRY_RUN" = true ]; then
+    log "DRY RUN: create directory $dest_dir"
+    log "DRY RUN: copy $src to $dest"
+    return
+  fi
 
-read -p "Enter choice [1-2]: " discord_choice
+  if [ "$EUID" -ne 0 ] && ! command -v sudo >/dev/null 2>&1; then
+    die "Root privileges are required to write $dest. Install sudo or run this script as root."
+  fi
 
-case $discord_choice in
-    1)
-        DISCORD_FLATPAK="com.discordapp.Discord"
+  if [ ! -d "$dest_dir" ]; then
+    if [ "$EUID" -eq 0 ]; then
+      mkdir -p "$dest_dir"
+    else
+      sudo mkdir -p "$dest_dir"
+    fi
+  fi
+
+  if [ "$EUID" -eq 0 ]; then
+    cp -f "$src" "$dest"
+  else
+    sudo cp -f "$src" "$dest"
+  fi
+}
+
+main() {
+  DRY_RUN=false
+
+  while [ "$#" -gt 0 ]; do
+    case "$1" in
+      --help|-h)
+        usage
+        exit 0
         ;;
-    2)
-        DISCORD_FLATPAK="com.vesktop.Vesktop"
+      --dry-run)
+        DRY_RUN=true
+        shift
         ;;
-    *)
-        echo "Wrong choice. Please run the script again and select a valid option."
-        exit 1
+      *)
+        die "Unknown argument: $1"
         ;;
-esac
+    esac
+  done
 
-PACKAGES="fastfetch topgrade"
+  check_source "$DNF_SRC"
+  check_source "$TOPGRADE_SRC"
 
-case $choice in
-    1)
-        echo "Detected Fedora"
-        sudo dnf update -y
-        sudo dnf install -y flatpak $PACKAGES
-        sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
-        sudo flatpak install flathub $DISCORD_FLATPAK -y
-        ;;
-    
-    2)
-        echo "Detected Debian/Ubuntu"
-        sudo apt update
-        sudo apt install -y flatpak $PACKAGES
-        sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
-        sudo flatpak install flathub $DISCORD_FLATPAK -y
-        ;;
-    
-    3)
-        echo "Detected Arch Linux"
-        sudo pacman -Syu --noconfirm
-        sudo pacman -S --noconfirm flatpak $PACKAGES
-        sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
-        sudo flatpak install flathub $DISCORD_FLATPAK -y
-        ;;
-    
-    *)
-        echo "Wrong choice. Please run the script again and select a valid option."
-        exit 1
-        ;;
-esac
+  install_file "$DNF_SRC" "$DNF_DEST"
+  install_file "$TOPGRADE_SRC" "$TOPGRADE_DEST"
 
-echo "Setup is done!"
+  log "Installation complete."
+}
+
+main "$@"
